@@ -20,7 +20,7 @@ def yes_no_check(question):
         else:
             print("Please enter yes (y) or no (no).\n")
 
-
+# This is the instructions of the code so it displays the instructions
 def instructions():
     """Displays instructions"""
     print(make_statement("Instructions", "ℹ️"))

@@ -1,3 +1,4 @@
+# Asks a question and if it is blank it returns the response
 def not_blank(question):
     """Checks user response is not blank"""
     while True:
@@ -12,8 +13,10 @@ def not_blank(question):
 
 # Loop for testing purposes
 while True:
+    # Asking for the name of the item
     item_name = not_blank("Item Name: ")
     if item_name == "xxx":
         break
+
     print(f"{item_name}")
 
