@@ -127,6 +127,73 @@ def currency(x):
     """Formats numbers as currency ($#.##)"""
     return "${:.2f}".format(x)
 
+def get_expenses(exp_type, how_much):
+    """Gets variable / fixed expenses and outputs
+    panda (as a string) and a subtotal of the expenses"""
+
+    # lists to hold details / panda
+    name = []
+    metric_mass = []
+    budget = []
+    price = []
+
+    # Compare_assessment dictionary
+    compare_dict = {
+        'Item': name,
+        'Mass': metric_mass,
+        'Budget': budget,
+        'Item Price': price
+    }
+
+    # default amount to 1 for fixed expenses and
+    # to avoid PEP 8 error for variable expenses.
+    amount = 1
+
+    # loop to get expenses
+    while True:
+
+            item_name = not_blank("Item Name: ")
+
+            if ((exp_type == "variable" and item_name == "xxx")
+                    and len(name) == 0):
+                print("Oops - you have not entered anything.  "
+                        "You need at least one item.")
+                continue
+
+            elif item_name == "xxx":
+                break
+
+            ask_metric_weight = num_check(f"How much mass does it have <enter for {how_much}>: ",
+                               "integer", "")
+
+            if ask_metric_weight == "":
+                ask_metric_weight = how_much
+
+            item_price = num_check("Price for the item? ", "float")
+
+            ask_budget = num_check("What is the Budget you have? ", "float")
+
+            name.append(item_name)
+            metric_mass.append(ask_metric_weight)
+            budget.append(ask_budget)
+            price.append(item_price)
+
+    # make panda
+    compare_frame = pandas.DataFrame(compare_dict)
+
+    # Calculate the mass / budget for each item
+    compare_frame['Total'] = compare_frame['ask_budget'] - compare_frame['item_price']
+    compare_frame['Spent'] = compare_frame['item_price'] - 1 + 1
+    compare_frame['Price Mass'] = compare_frame['ask_metric_weight'] / compare_frame['item_price']
+
+    # Work out the total paid and total left over...
+    total_paid = compare_frame['Total'].sum()
+    total_price = compare_frame['Spent'].sum()
+    total_price_mass = compare_frame['Price Mass'].sum()
+
+    total = compare_frame['Total'].sum()
+
+    return compare_frame, total
 
 # Main routine starts here
 print(make_statement("", ""))
@@ -135,98 +202,28 @@ if want_instructions == "yes":
     instructions()
 print("program continues...")
 
-# This is the list for the metric system
-amount_of_ml_l_g_kg_unit = ['ml', 'l', 'g', 'kg', ]
+print()
 
-# Initialise items
-MAX_ITEMS = 5
-items_bought = 0
+print("Getting Variable Costs...")
+variable_expenses = get_expenses("variable","how_much")
+print()
+variable_panda = variable_expenses[0]
+variable_total = variable_expenses[1]
 
+print(variable_panda)
+print(variable_total)
+print()
 
-# Loop to get item name, price,mass, and metric unit
-while items_bought < MAX_ITEMS:
+print("Getting Fixed Costs...")
+fixed_expenses = get_expenses("fixed", "how_much")
+print()
+fixed_panda = fixed_expenses[0]
+fixed_total = fixed_expenses[1]
 
-    # This is the name for the items
-    item_name = not_blank("Item Name: ")
-    if item_name == "xxx":
-        break
-    item_price = num_check("Price of the Item: ")
-    # This is asking for the type of metric system ranging from ml, L, g and Kg
-    amount_of_ml_l_g_kg = string_check("what type it is of the metric system ",
-                                       amount_of_ml_l_g_kg_unit, 1)
-    unit_type = amount_of_ml_l_g_kg
-
-    # if the answer to the metric system is ml, g it will /1000 and the unit will change to l, kg if not nothing changes
-    if amount_of_ml_l_g_kg == 'kg':
-        ask_metric_weight = num_check(f"how much mass is there in Total for the Item ")
-
-    elif amount_of_ml_l_g_kg == 'l':
-        ask_metric_weight = num_check(f"how much mass is there in Total for the Item ")
-
-    elif amount_of_ml_l_g_kg == 'g':
-        amount_of_ml_l_g_kg = 'kg'
-        ask_metric_weight = num_check(f"how much mass is there in Total for the Item ") / 1000
-
-    elif amount_of_ml_l_g_kg == 'ml':
-        amount_of_ml_l_g_kg = 'l'
-        ask_metric_weight = num_check(f"how much mass is there in Total for the Item ") / 1000
-
-    # this is asking for the budget it has to be 10 or more
-    ask_budget = num_check("How Much is the Budget ")
-    if ask_budget < 10:
-        print("Your Budget is to little you have to have a number that is 10 or greater for you budget")
-
-    unit_type = 'unit'
-
-    break_idk = yes_no_check("Do you want to break ")
-    if break_idk == "yes":
-        break
-
-# lists to hold details
-name = []
-metric_mass = []
-budget = []
-price = []
-
-compare_assessment_dict = {
-    'Item': name,
-    'Mass': metric_mass,
-    'Budget': budget,
-    'Item Price': price
-}
-
-name.append(item_name)
-metric_mass.append(ask_metric_weight)
-budget.append(ask_budget)
-price.append(item_price)
-
-
-
-items_bought += 1
+print(fixed_panda)
+print(fixed_total)
 
 # End of loop
 
-# create dataframe / table from dictionary
-compare_assessment_frame = pandas.DataFrame(compare_assessment_dict)
 
-# Calculate the mass / budget for each item
-compare_assessment_frame['Total'] = compare_assessment_frame['Budget'] - compare_assessment_frame['Item Price']
-compare_assessment_frame['Spent'] = compare_assessment_frame['Item Price'] - 1 + 1
-compare_assessment_frame['Price Mass'] = compare_assessment_frame['Mass'] / compare_assessment_frame['Item Price']
 
-# Work out the total paid and total left over...
-total_paid = compare_assessment_frame['Total'].sum()
-total_price = compare_assessment_frame['Spent'].sum()
-total_price_mass = compare_assessment_frame['Price Mass'].sum()
-
-print(compare_assessment_frame)
-print()
-print(f"Total Paid ${total_paid:.2f}")
-print(f"Total Price ${total_price:.2f}")
-print(f"Total Price Mass ${total_price_mass:.2f}")
-
-# Shows the results of the code after doing all the questions
-print(f"You bought {ask_metric_weight}{amount_of_ml_l_g_kg} of {item_name}")
-print(f"The price is ${item_price}")
-print(f"The budget ${ask_budget}")
-print()
